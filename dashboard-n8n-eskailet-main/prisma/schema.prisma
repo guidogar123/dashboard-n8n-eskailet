@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String
+  role          Role      @default(VIEWER)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastLogin     DateTime? @map("last_login")
+
+  @@map("users")
+}
+
+// Agent table becomes legacy/optional. We keep it for metadata if the user wants it,
+// but Execution/Faq will NOT depend on it via foreign keys to avoid insertion errors.
+model Agent {
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  n8nWorkflowId String?   @unique @map("n8n_workflow_id")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("agents")
+}
+
+model Lead {
+  id         String      @id @default(uuid())
+  name       String?
+  email      String?
+  phone      String?
+  source     String?     // Can store the agent name here too
+  summary    String?     @db.Text
+  date       DateTime    @default(now())
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  executions Execution[]
+
+  @@index([date], name: "idx_leads_date")
+  @@map("leads")
+}
+
+model Execution {
+  id               String          @id @default(uuid())
+  agentName        String          @default("Unknown") @map("agent_name")
+  n8nExecutionId   String          @unique @map("n8n_execution_id")
+  status           ExecutionStatus @default(SUCCESS)
+  startedAt        DateTime        @map("started_at")
+  endedAt          DateTime?       @map("ended_at")
+  durationSeconds  Int?            @map("duration_seconds")
+  modelUsed        String?         @map("model_used")
+  inputTokens      Int?            @map("input_tokens")
+  outputTokens     Int?            @map("output_tokens")
+  totalTokens      Int?            @map("total_tokens")
+  costUsd          Decimal?        @map("cost_usd") @db.Decimal(10, 6)
+  leadId           String?         @map("lead_id") // Optional relation to lead
+  firstUserMessage String?         @map("first_user_message") @db.Text
+  createdAt        DateTime        @default(now()) @map("created_at")
+
+  lead Lead? @relation(fields: [leadId], references: [id], onDelete: SetNull)
+
+  @@index([agentName, startedAt(sort: Desc)], name: "idx_executions_agent_name")
+  @@index([startedAt], name: "idx_executions_date")
+  @@index([n8nExecutionId], name: "idx_executions_id_n8n")
+  @@map("executions")
+}
+
+model ModelPricing {
+  id               String   @id @default(uuid())
+  modelName        String   @unique @map("model_name")
+  provider         String
+  inputPricePer1m  Decimal  @map("input_price_per_1m") @db.Decimal(10, 6)
+  outputPricePer1m Decimal  @map("output_price_per_1m") @db.Decimal(10, 6)
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("model_pricing")
+}
+
+model Faq {
+  id        String   @id @default(uuid())
+  agentName String?  @map("agent_name")
+  question  String   @db.Text
+  date      DateTime @default(now())
+  frequency Int      @default(1)
+  category  String?
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([date], name: "idx_faqs_date")
+  @@map("faqs")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum ExecutionStatus {
+  SUCCESS
+  ERROR
+}

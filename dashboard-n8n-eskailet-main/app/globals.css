@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Corporativo Eskailet: Amarillo Neón Extreme */
+  --primary: #dae689;
+  --primary-rgb: 218, 230, 137;
+
+  /* Fondo Dark Premium */
+  --background: #020617;
+  /* slate-950 para más profundidad */
+  --surface: #0f172a;
+  /* slate-900 */
+  --text-primary: #f8fafc;
+  /* slate-50 */
+  --text-secondary: #94a3b8;
+  /* slate-400 */
+  --text-muted: #64748b;
+  /* slate-500 */
+
+  /* Bordes y Acentos */
+  --border: #1e293b;
+  /* slate-800 */
+  --accent: #dae689;
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--text-primary);
+  }
+}
+
+@layer components {
+
+  /* Tarjetas Estándar (Restauradas) */
+  .card-standard {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+
+  /* Botón Primario (Amarillo Neón) */
+  .btn-primary {
+    @apply px-6 py-2.5 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-2;
+    background-color: var(--primary);
+    color: #000000;
+    /* Texto negro para contraste con amarillo */
+  }
+
+  .btn-primary:hover {
+    filter: brightness(110%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(218, 230, 137, 0.3);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Inputs y Formularios */
+  .input-field {
+    @apply w-full border border-slate-800 rounded-xl py-2 px-4 transition-all shadow-xl shadow-black/10 outline-none;
+    background-color: #0f172a !important;
+    color: white !important;
+  }
+
+  .input-field:focus {
+    border-color: rgba(218, 230, 137, 0.5) !important;
+    box-shadow: 0 0 0 1px rgba(218, 230, 137, 0.5) !important;
+  }
+
+  /* Forzar color en autofill de Chrome/Safari */
+  .input-field:-webkit-autofill,
+  .input-field:-webkit-autofill:hover,
+  .input-field:-webkit-autofill:focus {
+    -webkit-text-fill-color: white !important;
+    -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .input-field::placeholder {
+    color: #64748b !important;
+  }
+}
